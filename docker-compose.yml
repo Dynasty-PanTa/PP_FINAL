@@ -1,0 +1,27 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: minimart
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  web:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/minimart
+      JWT_SECRET_KEY: change-me
+      SECRET_KEY: change-me
+      FLASK_APP: run.py
+      FLASK_ENV: development
+    volumes:
+      - ./uploads:/app/uploads
+    command: bash -c "pip install -r requirements.txt && flask db upgrade || true && gunicorn -b 0.0.0.0:5000 run:app"
+volumes:
+  db_data:
